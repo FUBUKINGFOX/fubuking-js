@@ -6,10 +6,11 @@ const { joinVoiceChannel,
     NoSubscriberBehavior
 } = require("@discordjs/voice")
 const ytsr = require("ytsr")
+const { EmbedBuilder } = require("discord.js")
 
 
 var queue = {}
-var queue_music = function queue_music(ctx, song){
+var queue_music = async function queue_music(ctx, song, creat_msg){
     const guild_id = ctx.guild.id
     try {
         queue[guild_id].push(song)
@@ -17,6 +18,17 @@ var queue_music = function queue_music(ctx, song){
     catch(err){
         queue[guild_id] = []
         queue[guild_id].push(song)
+    }
+    if (creat_msg){
+        const embed = new EmbedBuilder()
+        .setDescription(`Queued [${song.title}](${song.url})`)
+        .setColor(0x00c6ff)
+        if (ctx.replied || ctx.deferred) {
+            await ctx.followUp({embeds:[embed]});
+        } 
+        else {
+            await ctx.reply({embeds:[embed]});
+        }
     }
 }
 module.exports.queue_music = queue_music
@@ -78,9 +90,28 @@ module.exports.getplayer = getplayer
 var nowplaying = {}
 module.exports.nowplaying = nowplaying
 
-var creat_resource = function creat_resource(guild_id){
+var creat_nowplaying_embed = function creat_nowplaying_embed(ctx,nowplaying_song){
+    return new EmbedBuilder()
+    .setTitle("**Now playing**")
+    .setDescription(`\`\`\`css\n${nowplaying_song.title}\`\`\``)
+    .setThumbnail(nowplaying_song.bestThumbnail.url)
+    .setColor(0x76dfff)
+    .addFields(
+        {name: "duration", value: `${nowplaying_song.duration}`, inline: true},
+        {name: "Requested by", value: `${ctx.user.toString()}`, inline: true},
+        {name: "Uploader", value: `[${nowplaying_song.author.name}](${nowplaying_song.author.url})`, inline: true},
+        {name: "URL", value: `[click](${nowplaying_song.url})`}
+    )
+
+}
+
+var creat_resource = async function creat_resource(ctx){
+    const guild_id = ctx.guild.id
     const song = queue[guild_id].shift()
     nowplaying[guild_id] = song
+    const embed = creat_nowplaying_embed(ctx,song)
+    await ctx.channel.send({embeds:[embed]})
+   
         const stream = ytdl(song.url,{ 
         quality: 'highestaudio',
         format: 'webm',
@@ -98,9 +129,9 @@ var creat_resource = function creat_resource(guild_id){
 var search = async function search(ctx, string){
     const filter_ = await ytsr.getFilters(string)
     const filter =  filter_.get("Type").get("Video")
-    await ytsr(filter.url,{ limit: 1, pages: 1 }).then(result => {
+    await ytsr(filter.url,{ limit: 1, pages: 1 }).then(async(result) => {
             let song = result.items[0]
-            queue_music(ctx, song)
+            await queue_music(ctx, song, true)
         }
     ) 
 }
@@ -110,7 +141,6 @@ var destroy = function destroy(ctx){
     const connection = getVoiceConnection(guild_id)
     if (connection == undefined){return false}
     const player = getplayer(ctx,true)
-    player.stop() 
     delete players[guild_id]
     delete queue[guild_id]
     delete nowplaying[guild_id]
@@ -136,14 +166,14 @@ module.exports.play = async function play(ctx, url){
     await search(ctx,url)
     console.log(queue)
     if (player.listenerCount("stateChange") < 1){
-        let resource = creat_resource(guild_id)
+        let resource = await creat_resource(ctx)
         connection.subscribe(player)
         player.play(resource)
-        player.addListener("stateChange", (oldOne, newOne) => {
+        player.addListener("stateChange", async(oldOne, newOne) => {
                 if (newOne.status == "idle") {
 
                     if (queue[guild_id][0] != undefined){
-                        let resource = creat_resource(guild_id)
+                        let resource = await creat_resource(ctx)
                         player.play(resource)
                     }
                     else{

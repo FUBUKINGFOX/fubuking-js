@@ -36,12 +36,12 @@ module.exports = {
         await play(interaction,interaction.options.getString("url"))
         const player = getplayer(interaction,false)
 
-        if (interaction.replied || interaction.deferred) {
-            await interaction.followUp(`queue ${interaction.options.getString("url")}`);
-        } 
-        else {
-            await interaction.reply(`queue ${interaction.options.getString("url")}`);
-        }
+        // if (interaction.replied || interaction.deferred) {
+        //     await interaction.followUp(`queue ${interaction.options.getString("url")}`);
+        // } 
+        // else {
+        //     await interaction.reply(`queue ${interaction.options.getString("url")}`);
+        // }
 
         player.on('error', error => {
             console.error('Error:', error.message);
