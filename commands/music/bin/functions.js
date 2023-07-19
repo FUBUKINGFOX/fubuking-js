@@ -1,3 +1,4 @@
+//  in this file:  ctx = interaction  //
 const ytdl  = require("ytdl-core")
 const { joinVoiceChannel,
     getVoiceConnection,
@@ -7,7 +8,6 @@ const { joinVoiceChannel,
 } = require("@discordjs/voice")
 const ytsr = require("ytsr")
 const { EmbedBuilder } = require("discord.js")
-
 
 var queue = {}
 var queue_music = async function queue_music(ctx, song, creat_msg){
@@ -97,7 +97,7 @@ var creat_nowplaying_embed = function creat_nowplaying_embed(ctx,nowplaying_song
     .setThumbnail(nowplaying_song.bestThumbnail.url)
     .setColor(0x76dfff)
     .addFields(
-        {name: "duration", value: `${nowplaying_song.duration}`, inline: true},
+        {name: "duration", value: `> ${nowplaying_song.duration}`, inline: true},
         {name: "Requested by", value: `${ctx.user.toString()}`, inline: true},
         {name: "Uploader", value: `[${nowplaying_song.author.name}](${nowplaying_song.author.url})`, inline: true},
         {name: "URL", value: `[click](${nowplaying_song.url})`}
