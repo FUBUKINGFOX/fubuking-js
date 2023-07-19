@@ -23,6 +23,7 @@ var queue_music = async function queue_music(ctx, song, creat_msg){
         const embed = new EmbedBuilder()
         .setDescription(`Queued [${song.title}](${song.url})`)
         .setColor(0x00c6ff)
+        await ctx.channel.sendTyping()
         if (ctx.replied || ctx.deferred) {
             await ctx.followUp({embeds:[embed]});
         } 
@@ -126,14 +127,20 @@ var creat_resource = async function creat_resource(ctx){
 
 //       serch(ctx, string)
 //                  ^^^^^^   ---> string or url   >> return {title:"value",...}
-var search = async function search(ctx, string){
-    const filter_ = await ytsr.getFilters(string)
-    const filter =  filter_.get("Type").get("Video")
-    await ytsr(filter.url,{ limit: 1, pages: 1 }).then(async(result) => {
-            let song = result.items[0]
-            await queue_music(ctx, song, true)
-        }
-    ) 
+var search = async function search(string){
+    // if (string.includes("youtube") && string.includes("https://")){
+    //     const result = await ytsr(string,{ pages: 1})
+    //     let song = result.items[0]
+    //     return song
+    // }
+    // else{
+        let filter = await ytsr.getFilters(string)
+        filter =  filter.get("Type").get("Video")
+        string = filter.url
+        const result = await ytsr(string,{ pages: 1,gl:"TW",hl:"zh"})
+        let song = result.items[0]
+        return song
+    // }
 }
 
 var destroy = function destroy(ctx){
@@ -162,8 +169,19 @@ module.exports.play = async function play(ctx, url){
             return
         }
     }
-
-    await search(ctx,url)
+    async function play_(){
+        await search(url).then(async(song)=>{
+            if (song == undefined){
+                await play_()
+            }
+            else{
+                await queue_music(ctx, song, true)
+            }
+        }).catch(async(err)=>{
+            await play_()
+        })
+    }
+    await play_()
     console.log(queue)
     if (player.listenerCount("stateChange") < 1){
         let resource = await creat_resource(ctx)

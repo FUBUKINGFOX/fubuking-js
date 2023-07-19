@@ -10,6 +10,7 @@ module.exports = {
         await interaction.reply("> shutdown")
         interaction.client.user.setStatus("invisible")
         await interaction.client.destroy()
+        process.exit(0)
         }
         else{
             embed = new EmbedBuilder()
