@@ -7,7 +7,7 @@ module.exports = {
     .setDescription("show the song list"),
     async execute(interaction){
         const guild_id = interaction.guild.id
-        if (queue[guild_id] == null){
+        if (queue[guild_id] == null || queue[guild_id].length == 0){
             await interaction.reply("queue is empty")
             return
         } 
