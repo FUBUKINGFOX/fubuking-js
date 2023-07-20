@@ -102,7 +102,7 @@ var creat_nowplaying_embed = function creat_nowplaying_embed(ctx,nowplaying_song
     return new EmbedBuilder()
     .setTitle("**<:foxtail:995271447905833030>Now playing**")
     .setDescription(`\`\`\`css\n${nowplaying_song.videoDetails.title}\`\`\``)
-    .setThumbnail(nowplaying_song.videoDetails.thumbnails[0].url)
+    .setThumbnail(nowplaying_song.videoDetails.thumbnails[nowplaying_song.videoDetails.thumbnails.length-1].url)
     .setColor(0x76dfff)
     .addFields(
         {name: "duration", value: `> ${duration_changer(nowplaying_song.videoDetails.lengthSeconds)}`, inline: true},
@@ -180,7 +180,7 @@ module.exports.play = async function play(ctx, url){
     let f = 0
     async function play_(){
         f++
-        if (f > 3){
+        if (f > 10){
             return await ctx.channel.send("no result searched...")
         }
         await search(url).then(async(song)=>{
@@ -197,7 +197,7 @@ module.exports.play = async function play(ctx, url){
     await play_()
     console.log(queue)
     if (player.listenerCount("stateChange") < 1){
-        if (!(f > 3)){
+        if (!(f > 10)){
             let resource = await creat_resource(ctx)
             connection.subscribe(player)
             player.play(resource)
