@@ -1,5 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder } = require("discord.js")
-const { queue, nowplaying } = require("./bin/functions.js")
+const { queue, nowplaying, duration_changer } = require("./bin/functions.js")
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -36,13 +36,13 @@ module.exports = {
         const embed = new EmbedBuilder()
         .setTitle(`**queue for ${interaction.guild.name}**`)
         .setColor(0x00c6ff)
-        .setDescription(`**Now playing**  [${nowplaying[guild_id].title}](${nowplaying[guild_id].url})`)
+        .setDescription(`**Now playing**  [${nowplaying[guild_id].videoDetails.title}](${nowplaying[guild_id].videoDetails.video_url})`)
         const p_start = page*10-10
         let counter = 0
         for (const i of queue[guild_id]){
             if (counter>=p_start && counter<(p_start+10)){
                 embed.addFields(
-                    {name: `\`${counter + 1}\` ${i.title}`,value: `> duration: \`${i.duration}\`\n `}
+                    {name: `\`${counter + 1}\` ${i.videoDetails.title}`,value: `> duration: \`${i.videoDetails.lengthSeconds}\`\n `}
                 )
             }
             counter += 1

@@ -21,7 +21,7 @@ var queue_music = async function queue_music(ctx, song, creat_msg){
     }
     if (creat_msg){
         const embed = new EmbedBuilder()
-        .setDescription(`Queued [${song.title}](${song.url})`)
+        .setDescription(`Queued [${song.videoDetails.title}](${song.videoDetails.video_url})`)
         .setColor(0x00c6ff)
         await ctx.channel.sendTyping()
         if (ctx.replied || ctx.deferred) {
@@ -90,18 +90,25 @@ module.exports.getplayer = getplayer
 
 var nowplaying = {}
 module.exports.nowplaying = nowplaying
+var duration_changer = function duration_changer(string){
+    const s_ = Number(string)
+    let m = Math.trunc(s_/60)
+    let s = s_%60
+    return `${m}:${s}`
+}
+module.exports.duration_changer = duration_changer
 
 var creat_nowplaying_embed = function creat_nowplaying_embed(ctx,nowplaying_song){
     return new EmbedBuilder()
-    .setTitle("**Now playing**")
-    .setDescription(`\`\`\`css\n${nowplaying_song.title}\`\`\``)
-    .setThumbnail(nowplaying_song.bestThumbnail.url)
+    .setTitle("**<:foxtail:995271447905833030>Now playing**")
+    .setDescription(`\`\`\`css\n${nowplaying_song.videoDetails.title}\`\`\``)
+    .setThumbnail(nowplaying_song.videoDetails.thumbnails[0].url)
     .setColor(0x76dfff)
     .addFields(
-        {name: "duration", value: `> ${nowplaying_song.duration}`, inline: true},
+        {name: "duration", value: `> ${duration_changer(nowplaying_song.videoDetails.lengthSeconds)}`, inline: true},
         {name: "Requested by", value: `${ctx.user.toString()}`, inline: true},
-        {name: "Uploader", value: `[${nowplaying_song.author.name}](${nowplaying_song.author.url})`, inline: true},
-        {name: "URL", value: `[click](${nowplaying_song.url})`}
+        {name: "Uploader", value: `[${nowplaying_song.videoDetails.author.name}](${nowplaying_song.videoDetails.author.user_url})`, inline: true},
+        {name: "URL", value: `[click](${nowplaying_song.videoDetails.video_url})`}
     )
 
 }
@@ -113,7 +120,7 @@ var creat_resource = async function creat_resource(ctx){
     const embed = creat_nowplaying_embed(ctx,song)
     await ctx.channel.send({embeds:[embed]})
    
-        const stream = ytdl(song.url,{ 
+        const stream = ytdl(song.videoDetails.video_url,{ 
         quality: 'highestaudio',
         format: 'webm',
         highWaterMark: 1 << 62,
@@ -128,19 +135,20 @@ var creat_resource = async function creat_resource(ctx){
 //       serch(ctx, string)
 //                  ^^^^^^   ---> string or url   >> return {title:"value",...}
 var search = async function search(string){
-    // if (string.includes("youtube") && string.includes("https://")){
-    //     const result = await ytsr(string,{ pages: 1})
-    //     let song = result.items[0]
-    //     return song
-    // }
-    // else{
+    if (string.includes("youtube") && string.includes("https://") && (!(string.includes("@")))){
+        const song = await ytdl.getBasicInfo(string)
+        
+        return song
+    }
+    else{
         let filter = await ytsr.getFilters(string)
         filter =  filter.get("Type").get("Video")
         string = filter.url
         const result = await ytsr(string,{ pages: 1,gl:"TW",hl:"zh"})
         let song = result.items[0]
-        return song
-    // }
+        song = await ytdl.getBasicInfo(song.url)
+        return 
+    }
 }
 
 var destroy = function destroy(ctx){
@@ -169,7 +177,12 @@ module.exports.play = async function play(ctx, url){
             return
         }
     }
+    let f = 0
     async function play_(){
+        f++
+        if (f > 3){
+            return await ctx.channel.send("no result searched...")
+        }
         await search(url).then(async(song)=>{
             if (song == undefined){
                 await play_()
@@ -184,22 +197,24 @@ module.exports.play = async function play(ctx, url){
     await play_()
     console.log(queue)
     if (player.listenerCount("stateChange") < 1){
-        let resource = await creat_resource(ctx)
-        connection.subscribe(player)
-        player.play(resource)
-        player.addListener("stateChange", async(oldOne, newOne) => {
-                if (newOne.status == "idle") {
+        if (!(f > 3)){
+            let resource = await creat_resource(ctx)
+            connection.subscribe(player)
+            player.play(resource)
+            player.addListener("stateChange", async(oldOne, newOne) => {
+                    if (newOne.status == "idle") {
 
-                    if (queue[guild_id][0] != undefined){
-                        let resource = await creat_resource(ctx)
-                        player.play(resource)
-                    }
-                    else{
-                        destroy(ctx)
+                        if (queue[guild_id][0] != undefined){
+                            let resource = await creat_resource(ctx)
+                            player.play(resource)
+                        }
+                        else{
+                            destroy(ctx)
+                        }
                     }
                 }
-            }
-        )
+            )
+        }
     }
 }
 
