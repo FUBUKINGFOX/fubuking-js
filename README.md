@@ -1,1 +1,1 @@
-![Alt](https://repobeats.axiom.co/api/embed/f5048a7508e8e19b675e87fbf14bfe0645f89b80.svg "Repobeats analytics image")
+![Alt](https://repobeats.axiom.co/api/embed/69c1c84351084062e5c0caa2ddc5f0716728d940.svg "Repobeats analytics image")
