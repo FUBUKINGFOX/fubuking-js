@@ -7,7 +7,7 @@ module.exports = {
     .setDescription("remove the song in queue")
     .addStringOption((index) => {
         return index
-        .setName(index)
+        .setName("index")
         .setDescription("the song's index you want to remove")
         .setRequired(true)
     }),
