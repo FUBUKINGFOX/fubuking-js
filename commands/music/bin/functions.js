@@ -144,10 +144,10 @@ var search = async function search(string){
         let filter = await ytsr.getFilters(string)
         filter =  filter.get("Type").get("Video")
         string = filter.url
-        const result = await ytsr(string,{ pages: 1,gl:"TW",hl:"zh"})
+        const result = await ytsr(string,{ pages: 1 })
         let song = result.items[0]
         song = await ytdl.getBasicInfo(song.url)
-        return 
+        return song
     }
 }
 
