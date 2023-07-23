@@ -31,6 +31,6 @@ module.exports = {
             return
         }
         const remove_song = queue[guild_id].splice(index - 1, 1)
-        await interaction.reply({content:`removed [${remove_song.videoDetails.title}](${remove_song.videoDetails.video_url})`})
+        await interaction.reply({content:`removed [${remove_song[0].videoDetails.title}](${remove_song[0].videoDetails.video_url})`})
     }
 }

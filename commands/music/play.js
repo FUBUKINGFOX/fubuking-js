@@ -1,6 +1,4 @@
-const ytdl  = require("ytdl-core")
-const { SlashCommandBuilder, EmbedBuilder } = require("discord.js")
-const { AudioPlayerStatus } = require("@discordjs/voice");
+const { SlashCommandBuilder } = require("discord.js")
 const { OWNER_ID } = require("../../config.json")
 const { play , getplayer } = require("./bin/functions.js")
 
