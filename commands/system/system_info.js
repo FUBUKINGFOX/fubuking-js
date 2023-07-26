@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder, version } = require("discord.js")
+const { server_version } = require("../../main.js")
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -11,7 +12,7 @@ module.exports = {
             .setColor(0xff55fc)
 			.addFields(
 				{name:`<:nodejs:1129082045138743429>node`,value:`> \`${process.version}\``, inline:true},
-				{name:`<:folderserver:1131107239055343616>server`,value:`> \`v0.0.1b\``, inline:true},
+				{name:`<:folderserver:1131107239055343616>server`,value:`> \`${server_version}\``, inline:true},
                 {name:`<:folderqueue:1131103042629017660>discord.js`,value:`> \`v${version}\``, inline:true}
 			)
             .setFooter({ text: 'CORN Studio', iconURL: 'https://cdn.discordapp.com/emojis/1028895182290161746.webp?size=96' });

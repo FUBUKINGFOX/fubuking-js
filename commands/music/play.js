@@ -33,6 +33,7 @@ module.exports = {
        
         await play(interaction,interaction.options.getString("url"))
         const player = getplayer(interaction,false)
+        if (!player){return};
 
         player.on('error', error => {
             console.error('Error:', error.message);

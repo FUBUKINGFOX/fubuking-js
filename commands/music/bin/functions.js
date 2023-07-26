@@ -93,8 +93,15 @@ module.exports.nowplaying = nowplaying
 var duration_changer = function duration_changer(string){
     const s_ = Number(string)
     let m = Math.trunc(s_/60)
+    let h = Math.trunc(m/60)
     let s = s_%60
-    return `${m}:${s}`
+    if (h < 1){
+        return `${m}:${s}`
+    }
+    else{
+        return `${h}:${m}:${s}`
+    }
+    
 }
 module.exports.duration_changer = duration_changer
 
@@ -183,16 +190,18 @@ module.exports.play = async function play(ctx, url){
         if (f > 10){
             return await ctx.channel.send("no result searched...")
         }
-        await search(url).then(async(song)=>{
-            if (song == undefined){
+        else{
+                await search(url).then(async(song)=>{
+                if (song == undefined){
+                    await play_()
+                }
+                else{
+                    await queue_music(ctx, song, true)
+                }
+            }).catch(async(err)=>{
                 await play_()
-            }
-            else{
-                await queue_music(ctx, song, true)
-            }
-        }).catch(async(err)=>{
-            await play_()
-        })
+            })
+        }
     }
     await play_()
     console.log(queue)

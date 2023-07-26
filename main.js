@@ -1,4 +1,4 @@
-const {Client , EmbedBuilder, GatewayIntentBits, REST , Routes, Collection, Events, Guild } = require('discord.js')
+const {Client, GatewayIntentBits, REST, Routes, Collection } = require('discord.js')
 const path = require('node:path')
 
 const fs = require("node:fs")
@@ -8,6 +8,7 @@ const client = new Client({
 	intents:[GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates],
 })
 module.exports.client = client
+module.exports.server_version = "0.0.2b"
 const rest = new REST({version:10}).setToken(TOKEN)
 
 function load_commands(){
