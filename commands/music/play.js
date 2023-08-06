@@ -1,13 +1,5 @@
 const { SlashCommandBuilder } = require("discord.js")
-const { OWNER_ID } = require("../../config.json")
 const { play , getplayer } = require("./bin/functions.js")
-
-
-function delay(milliseconds){
-    return new Promise(resolve => {
-        setTimeout(resolve, milliseconds);
-    });
-}
 
 
 module.exports = {

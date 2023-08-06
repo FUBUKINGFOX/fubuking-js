@@ -1,5 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder } = require("discord.js")
-const { OWNER_ID } = require("../../config.json")
+const { OWNER_ID } = require("../../config/config.json")
 
 module.exports = {
     data: new SlashCommandBuilder()

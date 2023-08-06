@@ -2,7 +2,7 @@ const {Client, GatewayIntentBits, REST, Routes, Collection } = require('discord.
 const path = require('node:path')
 
 const fs = require("node:fs")
-const { TOKEN, APPLICATION_ID, GUILD_ID } = require("./config.json")
+const { TOKEN, APPLICATION_ID, GUILD_ID } = require("./config/config.json")
 
 const client = new Client({
 	intents:[GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates],
@@ -72,6 +72,9 @@ async function main(){
 
 	client.login(TOKEN)
 }
-main()
+if (require.main === module) {
+	main()
+}
+
 
 

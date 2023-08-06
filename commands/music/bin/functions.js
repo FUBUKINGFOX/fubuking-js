@@ -11,6 +11,7 @@ const { EmbedBuilder } = require("discord.js")
 
 var queue = {}
 var queue_music = async function queue_music(ctx, song, creat_msg){
+    console.log(1)
     const guild_id = ctx.guild.id
     try {
         queue[guild_id].push(song)
@@ -23,7 +24,6 @@ var queue_music = async function queue_music(ctx, song, creat_msg){
         const embed = new EmbedBuilder()
         .setDescription(`Queued [${song.videoDetails.title}](${song.videoDetails.video_url})`)
         .setColor(0x00c6ff)
-        await ctx.channel.sendTyping()
         if (ctx.replied || ctx.deferred) {
             await ctx.followUp({embeds:[embed]});
         } 
@@ -95,6 +95,7 @@ var duration_changer = function duration_changer(string){
     let m = Math.trunc(s_/60)
     let h = Math.trunc(m/60)
     let s = s_%60
+    s = s.toFixed(0).padStart(2,"0")
     if (h < 1){
         return `${m}:${s}`
     }
@@ -142,7 +143,7 @@ var creat_resource = async function creat_resource(ctx){
 //       serch(ctx, string)
 //                  ^^^^^^   ---> string or url   >> return {title:"value",...}
 var search = async function search(string){
-    if (string.includes("youtube") && string.includes("https://") && (!(string.includes("@")))){
+    if (string.includes("youtu") && string.includes("https://") && (!(string.includes("@")))){
         const song = await ytdl.getBasicInfo(string)
         
         return song
@@ -160,19 +161,20 @@ var search = async function search(string){
 
 var destroy = function destroy(ctx){
     const guild_id = ctx.guild.id
-    const connection = getVoiceConnection(guild_id)
-    if (connection == undefined){return false}
-    const player = getplayer(ctx,true)
+    clearTimeout(channel_timeout[guild_id])
+    delete channel_timeout[guild_id]
     delete players[guild_id]
     delete queue[guild_id]
     delete nowplaying[guild_id]
+    const connection = getVoiceConnection(guild_id)
+    if (connection == undefined){return false}
     connection.destroy()
-    player.removeAllListeners("stateChange")
 }
 module.exports.destroy = destroy
 
 
 
+var channel_timeout = {}
 module.exports.play = async function play(ctx, url){
     const guild_id = ctx.guild.id
     let connection = getVoiceConnection(guild_id)
@@ -203,6 +205,7 @@ module.exports.play = async function play(ctx, url){
             })
         }
     }
+    await ctx.channel.sendTyping()
     await play_()
     console.log(queue)
     if (player.listenerCount("stateChange") < 1){
@@ -218,12 +221,20 @@ module.exports.play = async function play(ctx, url){
                             player.play(resource)
                         }
                         else{
-                            destroy(ctx)
+                            channel_timeout[guild_id] = setTimeout(destroy, 300000, ctx)
                         }
                     }
                 }
             )
         }
+        return
+    }
+
+    if (channel_timeout[guild_id] != null){
+        clearTimeout(channel_timeout[guild_id])
+        delete channel_timeout[guild_id]
+        let resource = await creat_resource(ctx)
+        player.play(resource)
     }
 }
 
