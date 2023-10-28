@@ -11,8 +11,8 @@ const { EmbedBuilder } = require("discord.js")
 
 var queue = {}
 var queue_music = async function queue_music(ctx, song, creat_msg){
-    console.log(1)
     const guild_id = ctx.guild.id
+    song.requester = ctx.user.toString()
     try {
         queue[guild_id].push(song)
     }
@@ -114,11 +114,10 @@ var creat_nowplaying_embed = function creat_nowplaying_embed(ctx,nowplaying_song
     .setColor(0x76dfff)
     .addFields(
         {name: "duration", value: `> ${duration_changer(nowplaying_song.videoDetails.lengthSeconds)}`, inline: true},
-        {name: "Requested by", value: `${ctx.user.toString()}`, inline: true},
+        {name: "Requested by", value: `${nowplaying_song.requester}`, inline: true},
         {name: "Uploader", value: `[${nowplaying_song.videoDetails.author.name}](${nowplaying_song.videoDetails.author.user_url})`, inline: true},
         {name: "URL", value: `[click](${nowplaying_song.videoDetails.video_url})`}
     )
-
 }
 
 var creat_resource = async function creat_resource(ctx){
@@ -128,9 +127,10 @@ var creat_resource = async function creat_resource(ctx){
     const embed = creat_nowplaying_embed(ctx,song)
     await ctx.channel.send({embeds:[embed]})
    
-        const stream = ytdl(song.videoDetails.video_url,{ 
+        const stream = ytdl(song.videoDetails.video_url,
+            { 
         quality: 'highestaudio',
-        format: 'webm',
+        format: 'mp3',
         highWaterMark: 1 << 62,
         liveBuffer: 1 << 62,
         bitrate: 128,
@@ -151,11 +151,10 @@ var search = async function search(string){
     else{
         let filter = await ytsr.getFilters(string)
         filter =  filter.get("Type").get("Video")
-        string = filter.url
-        const result = await ytsr(string,{ pages: 1 })
+        const result = await ytsr(filter.url,{ pages: 1 })
         let song = result.items[0]
-        song = await ytdl.getBasicInfo(song.url)
-        return song
+        
+        return await ytdl.getBasicInfo(song.url)
     }
 }
 

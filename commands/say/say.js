@@ -13,6 +13,7 @@ module.exports = {
 	async execute(interaction){
 		txt = interaction.options.getString("some_thing")
 		await interaction.reply(txt)
+		// await interaction.channel.send("<a:_fubuking_tek:1144902528429998140>")
+		// await interaction.channel.send("<a:_fuking_fox_256:1144907272393338981>")
 	}
 }
-
