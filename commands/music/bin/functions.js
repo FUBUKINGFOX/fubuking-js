@@ -94,6 +94,7 @@ var duration_changer = function duration_changer(string){
     const s_ = Number(string)
     let m = Math.trunc(s_/60)
     let h = Math.trunc(m/60)
+    m = m - h*60
     let s = s_%60
     s = s.toFixed(0).padStart(2,"0")
     if (h < 1){
@@ -106,7 +107,7 @@ var duration_changer = function duration_changer(string){
 }
 module.exports.duration_changer = duration_changer
 
-var creat_nowplaying_embed = function creat_nowplaying_embed(ctx,nowplaying_song){
+var creat_nowplaying_embed = function creat_nowplaying_embed(nowplaying_song){
     return new EmbedBuilder()
     .setTitle("**<:foxtail:995271447905833030>Now playing**")
     .setDescription(`\`\`\`css\n${nowplaying_song.videoDetails.title}\`\`\``)
@@ -124,7 +125,7 @@ var creat_resource = async function creat_resource(ctx){
     const guild_id = ctx.guild.id
     const song = queue[guild_id].shift()
     nowplaying[guild_id] = song
-    const embed = creat_nowplaying_embed(ctx,song)
+    const embed = creat_nowplaying_embed(song)
     await ctx.channel.send({embeds:[embed]})
    
         const stream = ytdl(song.videoDetails.video_url,
