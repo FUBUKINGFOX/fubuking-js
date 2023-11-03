@@ -1,12 +1,14 @@
 const { SlashCommandBuilder, EmbedBuilder } = require("discord.js")
-const { OWNER_ID } = require("../../config/config.json")
+const ini = require("ini")
+const fs = require("fs")
+const config = ini.parse(fs.readFileSync("./config/config.ini","utf-8"))
 
 module.exports = {
     data: new SlashCommandBuilder()
     .setName("shutdown")
     .setDescription("shutdown this bot"),
     async execute(interaction){
-        if (interaction.user.id == OWNER_ID) {
+        if (interaction.user.id == config["MAIN"]["OWNER_ID"]) {
         await interaction.reply("> shutdown")
         interaction.client.user.setStatus("invisible")
         await interaction.client.destroy()

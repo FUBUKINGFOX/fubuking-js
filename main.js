@@ -2,14 +2,15 @@ const {Client, GatewayIntentBits, REST, Routes, Collection } = require('discord.
 const path = require('node:path')
 
 const fs = require("node:fs")
-const { TOKEN, APPLICATION_ID, GUILD_ID } = require("./config/config.json")
+const ini = require("ini")
+const config = ini.parse(fs.readFileSync("./config/config.ini","utf-8"))
 
 const client = new Client({
 	intents:[GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates],
 })
 module.exports.client = client
 module.exports.server_version = "0.0.2b"
-const rest = new REST({version:10}).setToken(TOKEN)
+const rest = new REST({version:10}).setToken(config["MAIN"]["TOKEN"])
 
 function load_commands(){
 		const commands = [];
@@ -60,7 +61,7 @@ async function main(){
 
 		// The put method is used to fully refresh all commands in the guild with the current set
 		const data = await rest.put(
-			Routes.applicationCommands(APPLICATION_ID),
+			Routes.applicationCommands(config["MAIN"]["APPLICATION_ID"]),
 			{ body: commands },
 		);
 
@@ -70,7 +71,7 @@ async function main(){
 		console.error(error);
 	}
 
-	client.login(TOKEN)
+	client.login(config["MAIN"]["TOKEN"])
 }
 if (require.main === module) {
 	main()
