@@ -14,6 +14,5 @@ module.exports = {
         player.stop()
         const msg = await interaction.reply({content:"skip",fetchReply: true})
         msg.react("<:skip:1131089446222184468>")
-        msg.react("<a:_fuking_fox_256:1144907272393338981>")
     }
 }

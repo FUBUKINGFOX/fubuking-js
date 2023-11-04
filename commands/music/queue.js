@@ -42,7 +42,7 @@ module.exports = {
         for (const i of queue[guild_id]){
             if (counter>=p_start && counter<(p_start+10)){
                 embed.addFields(
-                    {name: `\`${counter + 1}\` ${i.videoDetails.title}`,value: `> duration: \`${i.videoDetails.lengthSeconds}\`\n `}
+                    {name: `\`${counter + 1}\` ${i.videoDetails.title}`,value: `> duration: \`${duration_changer(i.videoDetails.lengthSeconds)}\`\n `}
                 )
             }
             counter += 1

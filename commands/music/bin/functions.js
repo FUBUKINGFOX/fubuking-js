@@ -92,6 +92,7 @@ var nowplaying = {}
 module.exports.nowplaying = nowplaying
 var duration_changer = function duration_changer(string){
     const s_ = Number(string)
+    if (s_ == 0){return "Live"}
     let m = Math.trunc(s_/60)
     let h = Math.trunc(m/60)
     m = m - h*60
@@ -108,11 +109,16 @@ var duration_changer = function duration_changer(string){
 module.exports.duration_changer = duration_changer
 
 var creat_nowplaying_embed = function creat_nowplaying_embed(nowplaying_song){
+    let color = 0x76dfff
+    if (Number(nowplaying_song.videoDetails.lengthSeconds) == 0){
+        color = 0xff3f3f
+    }
+    
     return new EmbedBuilder()
     .setTitle("**<:foxtail:995271447905833030>Now playing**")
     .setDescription(`\`\`\`css\n${nowplaying_song.videoDetails.title}\`\`\``)
     .setThumbnail(nowplaying_song.videoDetails.thumbnails[nowplaying_song.videoDetails.thumbnails.length-1].url)
-    .setColor(0x76dfff)
+    .setColor(color)
     .addFields(
         {name: "duration", value: `> ${duration_changer(nowplaying_song.videoDetails.lengthSeconds)}`, inline: true},
         {name: "Requested by", value: `${nowplaying_song.requester}`, inline: true},
@@ -146,16 +152,17 @@ var creat_resource = async function creat_resource(ctx){
 var search = async function search(string){
     if (string.includes("youtu") && string.includes("https://") && (!(string.includes("@")))){
         const song = await ytdl.getBasicInfo(string)
-        
         return song
     }
+    else if (string.includes("https://")){
+        return undefined
+    }
     else{
-        let filter = await ytsr.getFilters(string)
-        filter =  filter.get("Type").get("Video")
-        const result = await ytsr(filter.url,{ pages: 1 })
-        let song = result.items[0]
-        
-        return await ytdl.getBasicInfo(song.url)
+        const filters = await ytsr.getFilters(string)
+        const filter = filters.get('Type').get('Video')
+        const results = await ytsr(filter.url,{pages:1})
+        const song = await ytdl.getBasicInfo(results["items"][0].url)
+        return song
     }
 }
 
@@ -186,30 +193,25 @@ module.exports.play = async function play(ctx, url){
             return
         }
     }
-    let f = 0
-    async function play_(){
-        f++
-        if (f > 10){
-            return await ctx.channel.send("no result searched...")
+    let flag = true
+    await ctx.channel.sendTyping()
+    await search(url).then(async(song)=>{
+        if (song == undefined){
+            flag = false
+            if (ctx.replied || ctx.deferred) {
+                return await ctx.followUp("url error")
+            } 
+            else {
+                return await ctx.reply("url error")
+            }
         }
         else{
-                await search(url).then(async(song)=>{
-                if (song == undefined){
-                    await play_()
-                }
-                else{
-                    await queue_music(ctx, song, true)
-                }
-            }).catch(async(err)=>{
-                await play_()
-            })
+            await queue_music(ctx, song, true)
         }
-    }
-    await ctx.channel.sendTyping()
-    await play_()
+    })
     console.log(queue)
-    if (player.listenerCount("stateChange") < 1){
-        if (!(f > 10)){
+    if(flag == true){ //when song undefind will skip scrip
+        if (player.listenerCount("stateChange") < 1){
             let resource = await creat_resource(ctx)
             connection.subscribe(player)
             player.play(resource)
@@ -226,15 +228,15 @@ module.exports.play = async function play(ctx, url){
                     }
                 }
             )
+            return
         }
-        return
-    }
 
-    if (channel_timeout[guild_id] != null){
-        clearTimeout(channel_timeout[guild_id])
-        delete channel_timeout[guild_id]
-        let resource = await creat_resource(ctx)
-        player.play(resource)
+        if (channel_timeout[guild_id] != null){
+            clearTimeout(channel_timeout[guild_id])
+            delete channel_timeout[guild_id]
+            let resource = await creat_resource(ctx)
+            player.play(resource)
+        }
     }
 }
 
