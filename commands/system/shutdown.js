@@ -1,17 +1,16 @@
 const { SlashCommandBuilder, EmbedBuilder } = require("discord.js")
-const ini = require("ini")
-const fs = require("fs")
-const config = ini.parse(fs.readFileSync("./config/config.ini","utf-8"))
+const {get_cfg_value,save_config} = require("../../module/config_loader")
 
 module.exports = {
     data: new SlashCommandBuilder()
     .setName("shutdown")
     .setDescription("shutdown this bot"),
     async execute(interaction){
-        if (interaction.user.id == config["MAIN"]["OWNER_ID"]) {
+        if (interaction.user.id == get_cfg_value("config","MAIN","OWNER_ID","")) {
         await interaction.reply("> shutdown")
         interaction.client.user.setStatus("invisible")
         await interaction.client.destroy()
+        save_config()
         process.exit(0)
         }
         else{

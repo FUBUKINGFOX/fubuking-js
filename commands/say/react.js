@@ -1,7 +1,5 @@
 const { SlashCommandBuilder } = require("discord.js")
-const ini = require("ini")
-const fs = require("fs")
-const config = ini.parse(fs.readFileSync("./config/config.ini","utf-8"))
+const {get_cfg_value} = require("../../module/config_loader")
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -21,7 +19,7 @@ module.exports = {
     }),
 	async execute(interaction){
 
-        if (interaction.user.id != config["MAIN"]["OWNER_ID"]) {
+        if (interaction.user.id != get_cfg_value("config","MAIN","OWNER_ID","")) {
             embed = new EmbedBuilder()
             .setTitle("ERROR code[403]")
             .setDescription("you haven't permission")

@@ -1,7 +1,5 @@
 const { Events, ActivityType } = require('discord.js')
-const ini = require("ini")
-const fs = require("fs")
-const config = ini.parse(fs.readFileSync("./config/config.ini","utf-8"))
+const {get_cfg_value} = require("../module/config_loader")
 
 module.exports = {
 	name: Events.ClientReady,
@@ -11,8 +9,8 @@ module.exports = {
         console.log(`\x1b[95m${client.user.username}\x1b[0m`)
 		client.user.setStatus("idle")
 		client.user.setActivity("youtube",{type:ActivityType.Listening})
-		const guild = await client.guilds.fetch(config["MAIN"]["GUILD_ID"])
-		const ch = await guild.channels.fetch(config["MAIN"]["ON_READY_MSG"])
+		const guild = await client.guilds.fetch(get_cfg_value("config","MAIN","GUILD_ID",""))
+		const ch = await guild.channels.fetch(get_cfg_value("config","MAIN","ON_READY_MSG",""))
 		await ch.send(`<:nodejs:1129082045138743429> :${client.user.username}\`${client.user.id}\``)
 	},
 };
