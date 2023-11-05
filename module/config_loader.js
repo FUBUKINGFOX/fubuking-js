@@ -6,7 +6,7 @@ var config = {}
 function load_config(){
     const files = fs.readdirSync("./config","utf-8")
     for(let file of files){
-        if (file.endsWith(".ini")){
+        if (file.endsWith(".ini") && !(file.includes("example"))){
             config[file.replace(".ini","")] = ini.parse(fs.readFileSync(`./config/${file}`,"utf-8"))
             console.log(`\x1b[94m${file} \x1b[92mloaded\x1b[0m`)
         }
