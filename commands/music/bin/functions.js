@@ -90,13 +90,12 @@ module.exports.getplayer = getplayer
 
 var nowplaying = {}
 module.exports.nowplaying = nowplaying
-var duration_changer = function duration_changer(string){
-    const s_ = Number(string)
-    if (s_ == 0){return "Live"}
-    let m = Math.trunc(s_/60)
+var duration_changer = function duration_changer(sec_num){
+    if (sec_num == 0){return "Live"}
+    let m = Math.trunc(sec_num/60)
     let h = Math.trunc(m/60)
     m = m - h*60
-    let s = s_%60
+    let s = sec_num%60
     s = s.toFixed(0).padStart(2,"0")
     if (h < 1){
         return `${m}:${s}`
@@ -110,7 +109,8 @@ module.exports.duration_changer = duration_changer
 
 var creat_nowplaying_embed = function creat_nowplaying_embed(nowplaying_song){
     let color = 0x76dfff
-    if (Number(nowplaying_song.videoDetails.lengthSeconds) == 0){
+    const duration = Number(nowplaying_song.videoDetails.lengthSeconds)
+    if (duration == 0){
         color = 0xff3f3f
     }
     
@@ -120,7 +120,7 @@ var creat_nowplaying_embed = function creat_nowplaying_embed(nowplaying_song){
     .setThumbnail(nowplaying_song.videoDetails.thumbnails[nowplaying_song.videoDetails.thumbnails.length-1].url)
     .setColor(color)
     .addFields(
-        {name: "duration", value: `> ${duration_changer(nowplaying_song.videoDetails.lengthSeconds)}`, inline: true},
+        {name: "duration", value: `> ${duration_changer(duration)}`, inline: true},
         {name: "Requested by", value: `${nowplaying_song.requester}`, inline: true},
         {name: "Uploader", value: `[${nowplaying_song.videoDetails.author.name}](${nowplaying_song.videoDetails.author.user_url})`, inline: true},
         {name: "URL", value: `[click](${nowplaying_song.videoDetails.video_url})`}
@@ -136,10 +136,11 @@ var creat_resource = async function creat_resource(ctx){
    
         const stream = ytdl(song.videoDetails.video_url,
             { 
+        filter : 'audioonly',
         quality: 'highestaudio',
         format: 'mp3',
         highWaterMark: 1 << 62,
-        liveBuffer: 1 << 62,
+        liveBuffer: 2500,
         bitrate: 128,
         }
     )
@@ -150,11 +151,11 @@ var creat_resource = async function creat_resource(ctx){
 //       serch(ctx, string)
 //                  ^^^^^^   ---> string or url   >> return {title:"value",...}
 var search = async function search(string){
-    if (string.includes("youtu") && string.includes("https://") && (!(string.includes("@")))){
+    if (string.includes("youtu") && string.startsWith("https://") && (!(string.includes("@")))){
         const song = await ytdl.getBasicInfo(string)
         return song
     }
-    else if (string.includes("https://")){
+    else if (string.startsWith("https://")){
         return undefined
     }
     else{
@@ -210,7 +211,7 @@ module.exports.play = async function play(ctx, url){
         }
     })
     console.log(queue)
-    if(flag == true){ //when song undefind will skip scrip
+    if(flag == true){ //when song undefind will skip script
         if (player.listenerCount("stateChange") < 1){
             let resource = await creat_resource(ctx)
             connection.subscribe(player)
