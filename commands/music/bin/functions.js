@@ -6,8 +6,11 @@ const { joinVoiceChannel,
     createAudioPlayer,
     NoSubscriberBehavior
 } = require("@discordjs/voice")
-const ytsr = require("ytsr")
 const { EmbedBuilder } = require("discord.js")
+
+const { search } = require("./net/search")
+const { get_cfg_value } = require("../../../module/config_loader")
+const { APPLICATION_tester } = require("../../../module/fetch_APPLICATION_tester")
 
 var queue = {}
 var queue_music = async function queue_music(ctx, song, creat_msg){
@@ -140,32 +143,13 @@ var creat_resource = async function creat_resource(ctx){
         quality: 'highestaudio',
         format: 'mp3',
         highWaterMark: 1 << 62,
-        liveBuffer: 2500,
+        liveBuffer: 500,
         bitrate: 128,
         }
     )
     return createAudioResource(stream)
 }
 
-
-//       serch(ctx, string)
-//                  ^^^^^^   ---> string or url   >> return {title:"value",...}
-var search = async function search(string){
-    if (string.includes("youtu") && string.startsWith("https://") && (!(string.includes("@")))){
-        const song = await ytdl.getBasicInfo(string)
-        return song
-    }
-    else if (string.startsWith("https://")){
-        return undefined
-    }
-    else{
-        const filters = await ytsr.getFilters(string)
-        const filter = filters.get('Type').get('Video')
-        const results = await ytsr(filter.url,{pages:1})
-        const song = await ytdl.getBasicInfo(results["items"][0].url)
-        return song
-    }
-}
 
 var destroy = function destroy(ctx){
     const guild_id = ctx.guild.id
@@ -179,7 +163,6 @@ var destroy = function destroy(ctx){
     connection.destroy()
 }
 module.exports.destroy = destroy
-
 
 
 var channel_timeout = {}
@@ -204,6 +187,15 @@ module.exports.play = async function play(ctx, url){
             } 
             else {
                 return await ctx.reply("url error")
+            }
+        }
+        else if (song.filt_tag && !(APPLICATION_tester.includes(ctx.user.id))){
+            flag = false
+            if (ctx.replied || ctx.deferred) {
+                return await ctx.followUp("this song had been filted")
+            } 
+            else {
+                return await ctx.reply("this song had been filted")
             }
         }
         else{

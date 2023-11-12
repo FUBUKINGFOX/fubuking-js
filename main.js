@@ -7,7 +7,7 @@ const {load_config,get_cfg_value} = require("./module/config_loader")
 //init
 load_config()
 const client = new Client({
-	intents:[GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates],
+	intents:[GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.GuildMembers],
 })
 module.exports.client = client
 module.exports.server_version = "0.0.2c"

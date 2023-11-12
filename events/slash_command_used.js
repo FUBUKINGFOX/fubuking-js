@@ -1,4 +1,5 @@
 const { Events } = require('discord.js')
+const { APPLICATION_tester } = require("../module/fetch_APPLICATION_tester")
 
 
 module.exports = {
@@ -15,7 +16,22 @@ module.exports = {
         }
 
         try {
-            await command.execute(interaction);
+            if (command.beta == true){
+                if (APPLICATION_tester.includes(interaction.user.id)){
+                    await command.execute(interaction);
+                }
+                else{
+                    if (interaction.replied || interaction.deferred) {
+                        await interaction.followUp({ content: 'This command is on close beta', ephemeral: true });
+                    } 
+                    else {
+                        await interaction.reply({ content: 'This command is on close beta', ephemeral: true });
+                    }
+                }
+            }
+            else{
+                await command.execute(interaction);
+            }
         } 
         catch (error) {
             console.error(error);
